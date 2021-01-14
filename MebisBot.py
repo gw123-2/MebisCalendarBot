@@ -5,7 +5,6 @@ import re
 import requests
 import time
 import shutil
-import sys
 from discord.ext import commands 
 from threading import Thread
 

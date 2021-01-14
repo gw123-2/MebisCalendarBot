@@ -214,7 +214,7 @@ async def updateMebisCalendar():
 
                 #notify the user
                 #save the new Calendar
-                shutil.copyfile("database/cache/" + u + ".ics", "database/icsfiles/" + u + ".ics")
+                shutil.copyfile("database/icsfiles/temp.ics", "database/icsfiles/" + u + ".ics")
                 #delete the file from the cache
                 os.remove("database/icsfiles/temp.ics")
         print("done")

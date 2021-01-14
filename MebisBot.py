@@ -181,10 +181,11 @@ async def updateMebisCalendar():
         for u in users:
             print("checking calender of " + u)
             #downloads calender in the cache folder
-            downloadCalendar(u, "database/cache/" + u + ".ics")
-            #loads old an new ICS calendar file
-            uCalNew = readIcsFile("database/cache/" + u + ".ics")
+            downloadCalendar(u, "database/icsfiles/temp.ics")
+            #loads new ICS calendar file
+            uCalNew = readIcsFile("database/icsfiles/temp.ics")
             try:
+                #loads old ICS calendar file
                 uCalOld = readIcsFile("database/icsfiles/" + u + ".ics")
             except:
                 #if it fails, make it a table which is never returned by readIcsFile()
@@ -216,7 +217,7 @@ async def updateMebisCalendar():
                 #save the new Calendar
                 shutil.copyfile("database/cache/" + u + ".ics", "database/icsfiles/" + u + ".ics")
                 #delete the file from the cache
-                os.remove("database/cache/" + u + ".ics")
+                os.remove("database/icsfiles/temp.ics")
         print("done")
         #pause loop for a time in seconds
         await asyncio.sleep(10*60)

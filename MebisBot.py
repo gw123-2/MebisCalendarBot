@@ -5,11 +5,10 @@ import re
 import requests
 import time
 import shutil
-from discord.ext import commands 
-from threading import Thread
+from discord.ext import commands
 
 testcalender = "calendar.ics"
-userFile = "database/user.ls"
+userFile = "data/user.ls"
 
 
 #get the calendar URL from a user
@@ -61,8 +60,8 @@ def removeUser(user):
             first = False
     file.close()
     #remove the saved calendar file if existing
-    if os.path.exists("database/icsfiles/" + user + ".ics"):
-        os.remove("database/icsfiles/" + user + ".ics")
+    if os.path.exists("data/icsfiles/" + user + ".ics"):
+        os.remove("data/icsfiles/" + user + ".ics")
     
     
 def configUser(user, calendarURL):
@@ -180,12 +179,11 @@ async def updateMebisCalendar():
         for u in users:
             print("checking calender of " + u)
             #downloads calender in the cache folder
-            downloadCalendar(u, "database/icsfiles/temp.ics")
-            #loads new ICS calendar file
-            uCalNew = readIcsFile("database/icsfiles/temp.ics")
+            downloadCalendar(u, "data/icsfiles/temp.ics")
+            #loads old an new ICS calendar file
+            uCalNew = readIcsFile("data/icsfiles/temp.ics")
             try:
-                #loads old ICS calendar file
-                uCalOld = readIcsFile("database/icsfiles/" + u + ".ics")
+                uCalOld = readIcsFile("data/icsfiles/" + u + ".ics")
             except:
                 #if it fails, make it a table which is never returned by readIcsFile()
                 uCalOld = ["error"]
@@ -210,13 +208,18 @@ async def updateMebisCalendar():
                 #only send it if the changes were found
                 if found:
                     print("notifying "+ u +"...")
-                    await bot.get_channel(int(u)).send(embed=embed)
+                    #try:
+                    user = await bot.fetch_user(int(u))
+                    await user.send(embed=embed)
+                    #except :
+                    #    print("cant find user " + u)
+                    
 
                 #notify the user
                 #save the new Calendar
-                shutil.copyfile("database/icsfiles/temp.ics", "database/icsfiles/" + u + ".ics")
+                shutil.copyfile("data/icsfiles/temp.ics", "data/icsfiles/" + u + ".ics")
                 #delete the file from the cache
-                os.remove("database/icsfiles/temp.ics")
+                os.remove("data/icsfiles/temp.ics")
         print("done")
         #pause loop for a time in seconds
         await asyncio.sleep(10*60)
@@ -230,7 +233,7 @@ async def on_ready():
     await updateMebisCalendar()
 
 
-@bot.command(name="configUser", help="ordnet dem Kanal einen Mebis-Kalender Link zu.\n Snytax: >configUser [URL]\n um den URL deines Mebiskalenders zu finden, nutze >calendarHelp")
+@bot.command(name="configUser", help="ordnet dem Nutzer des Befehls einen Mebis-Kalender Link zu. Updates werden privat versendet\n Snytax: >configUser [URL]\n um den URL deines Mebiskalenders zu finden, nutze >calendarHelp")
 async def confUser(ctx):
 #search for the position mebis calendar URL
     try:
@@ -243,9 +246,8 @@ async def confUser(ctx):
         return
     
     #save the channel ID as user and cut the URL out of the 
-    configUser(str(ctx.message.channel.id), ctx.message.content[matchspan[0]:matchspan[1]])
-
-    await ctx.send("registriert!")
+    configUser(str(ctx.message.author.id), ctx.message.content[matchspan[0]:matchspan[1]])
+    await ctx.send("registriert! Sobald es updates gibt, wirst du per direct Message informiert")
 
 @bot.command(name="calendarHelp", help="Anleitung um die URL deines Mebiskalenders zu finden")
 async def calendarHelp(ctx):
@@ -261,7 +263,8 @@ async def calendarHelp(ctx):
 
 @bot.command(name="removeUser", help="entferne dich von der Aktualisierungsliste")
 async def remUser(ctx):
-    removeUser(str(ctx.message.channel.id))
-    await ctx.send("dieser Channel (" + str(ctx.message.channel.id) + ") wurde von der Liste entfernt")
+    removeUser(str(ctx.message.author.id))
+    await ctx.send("du wurdest von der Liste entfernt")
 
-bot.run("discord_bot_token")
+#insert your bot Token here. You can get one on the Discord Developer Portal (https://discord.com/developers/)
+bot.run("your_bot_token")
